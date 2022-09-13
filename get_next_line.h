@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: mfroissa <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/05/24 04:24:09 by mfroissa          #+#    #+#             */
-/*   Updated: 2022/06/07 17:55:26 by mfroissa         ###   ########.fr       */
+/*   Created: 2022/09/09 23:46:32 by mfroissa          #+#    #+#             */
+/*   Updated: 2022/09/13 19:23:49 by mfroissa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,14 +15,14 @@
 
 # include <stdlib.h>
 # include <stdio.h>
-# include <unistd.h>
 # include <fcntl.h>
 # include <string.h>
+# include <unistd.h>
 
-size_t	ft_strlen(char *line);
-size_t	ft_is_there_n(char *buff);
-char	*ft_transfer(char *line, char *buff, size_t n);
-void	ft_clear_n(char *buff, size_t n);
+int		search_n(char *line, char c);
+char	*get_rest(char *buff, int n);
+char	*strjoin(char *line, char *buff, int n);
+char	*gnl_core(char *line, char *buff, int n);
 char	*get_next_line(int fd);
 
 #endif

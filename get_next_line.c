@@ -5,141 +5,119 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: mfroissa <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/06/03 18:27:29 by mfroissa          #+#    #+#             */
-/*   Updated: 2022/06/15 15:08:23 by mfroissa         ###   ########.fr       */
+/*   Created: 2022/09/13 17:01:17 by mfroissa          #+#    #+#             */
+/*   Updated: 2022/09/13 19:23:36 by mfroissa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-size_t	ft_strlen(char *line)
+int	search_n(char *line, char c)
 {
-	size_t	i;
+	int	i;
 
+	if (!line)
+		return (0);
 	i = 0;
 	while (line[i])
-		i++;
-	return (i);
-}
-
-size_t	ft_is_there_n(char *buff)
-{
-	size_t	i;
-
-	i = 0;
-	while (buff[i])
 	{
-		if (buff[i] == '\n')
+		if (line[i] == '\n' && c == 'n')
 			return (i + 1);
 		i++;
 	}
+	if (c != 'n')
+		return (i);
 	return (0);
 }
 
-char	*ft_transfer(char *line, char *buff, size_t n)
+char	*get_rest(char *buff, int n)
 {
-	size_t	i;
-	char	*new;
-	size_t	len;
+	int	i;
 
-	len = 0;
 	i = 0;
-	if (line)
-		len = ft_strlen(line);
-	new = (char *)malloc(sizeof(char) * (len + n + 1));
-	while (i < len)
+	while (buff[n])
 	{
-		new[i] = line[i];
+		buff[i] = buff[n];
 		i++;
+		n++;
 	}
-	i = 0;
-	while (buff[i] && i < n)
-	{
-		new[i + len] = buff[i];
-		i++;
-	}
-	new[i + len] = '\0';
-	free(line);
-	return (new);
+	buff[i] = '\0';
+	return (buff);
 }
 
-void	ft_clear_n(char *buff, size_t n)
+char	*strjoin(char *line, char *buff, int n)
 {
-	size_t	i;
+	char	*str;
+	int		i;
 
+	str = malloc(sizeof(char) * (search_n(line, 's') + n + 1));
+	if (!str)
+		return (NULL);
 	i = 0;
-	while (buff[i + n])
+	if (line)
 	{
-		buff[i] = buff[i + n];
+		while (line[i])
+		{
+			str[i] = line[i];
+			i++;
+		}
+	}
+	i = 0;
+	while (i < n)
+	{
+		str[search_n(line, 's') + i] = buff[i];
 		i++;
 	}
-	buff[i] = buff[i + n];
+	str[search_n(line, 's') + i] = '\0';
+	free(line);
+	return (str);
+}
+
+char	*gnl_core(char *line, char *buff, int fd)
+{
+	size_t	byte;
+
+	byte = 1;
+	if (buff[0] == '\0')
+	{
+		byte = read(fd, buff, BUFFER_SIZE);
+		if (byte == 0)
+			return (NULL);
+		buff[byte] = '\0';
+	}
+	while (!search_n(buff, 'n') && byte)
+	{
+		line = strjoin(line, buff, search_n(buff, 's'));
+		byte = read(fd, buff, BUFFER_SIZE);
+		buff[byte] = '\0';
+	}
+	line = strjoin(line, buff, search_n(buff, 'n'));
+	buff = get_rest(buff, search_n(buff, 'n'));
+	return (line);
 }
 
 char	*get_next_line(int fd)
 {
-	static char		buff[BUFFER_SIZE + 1] = {0};
-	char			*line;
-	static size_t	byte;
+	static char	buff[BUFFER_SIZE + 1];
+	char		*line;
 
 	if (fd < 0 || fd > 1023 || BUFFER_SIZE <= 0 || (read(fd, 0, 0) <= -1))
 		return (NULL);
 	line = NULL;
-	if (buff[0] != '\0')
-	{
-		if (ft_is_there_n(buff))
-		{
-			line = ft_transfer(line, buff, ft_is_there_n(buff));
-			ft_clear_n(buff, ft_is_there_n(buff));
-			return (line);
-		}
-		line = ft_transfer(line, buff, ft_strlen(buff));
-		if (byte < BUFFER_SIZE && byte > 0)
-		{
-			byte = read(fd, buff, BUFFER_SIZE);
-			buff[0] = '\0';
-			return (line);
-		}
-	}
-	byte = read(fd, buff, BUFFER_SIZE);
-	if (byte == 0)
-	{
-		if (buff[0] != '\0')
-		{
-			buff[0] = '\0';
-			return (line);
-		}
-		buff[0] = '\0';
-		return (free(line), NULL);
-	}
-	buff[byte] = '\0';
-	while (!ft_is_there_n(buff))
-	{
-		line = ft_transfer(line, buff, ft_strlen(buff));
-		if (byte < BUFFER_SIZE)
-		{
-			byte = read(fd, buff, BUFFER_SIZE);
-			buff[0] = '\0';
-			return (line);
-		}
-		byte = read(fd, buff, BUFFER_SIZE);
-		buff[byte] = '\0';
-	}
-	line = ft_transfer(line, buff, ft_is_there_n(buff));
-	ft_clear_n(buff, ft_is_there_n(buff));
+	line = gnl_core(line, buff, fd);
 	return (line);
 }
 /*
-int	main()
+int	 main()
 {
-	int	fd = open("41_with_nl", O_RDONLY);
+	int	fd = open("test", O_RDONLY);
 	char	*line;
-	
+
 	while ((line = get_next_line(fd)))
- 	{
- 		printf("%s", line);
- 		free(line);
- 	}
- 	close(fd);
- 	return (0);
+	{
+		printf("%s", line);
+		free(line);
+	}
+	close(fd);
+	return (0);
 }*/
