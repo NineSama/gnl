@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*   get_next_line_bonus.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mfroissa <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 17:01:17 by mfroissa          #+#    #+#             */
-/*   Updated: 2022/09/14 14:40:40 by mfroissa         ###   ########.fr       */
+/*   Updated: 2022/09/14 14:48:48 by mfroissa         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,26 +98,37 @@ char	*gnl_core(char *line, char *buff, int fd)
 
 char	*get_next_line(int fd)
 {
-	static char	buff[BUFFER_SIZE + 1];
+	static char	buff[1024][BUFFER_SIZE + 1];
 	char		*line;
 
 	if (fd < 0 || fd > 1023 || BUFFER_SIZE <= 0 || (read(fd, 0, 0) <= -1))
 		return (NULL);
 	line = NULL;
-	line = gnl_core(line, buff, fd);
+	line = gnl_core(line, buff[fd], fd);
 	return (line);
 }
-/*
-int	 main()
-{
-	int	fd = open("test", O_RDONLY);
-	char	*line;
 
-	while ((line = get_next_line(fd)))
-	{
-		printf("%s", line);
-		free(line);
-	}
-	close(fd);
-	return (0);
-}*/
+// int	 main()
+// {
+// 	int	i;
+
+// 	i = 0;
+// 	int	fd = open("test", O_RDONLY);
+// 	int	fd2 = open("test2", O_RDONLY);
+// 	char	*line;
+// 	char	*line2;
+
+// 	while (i < 6)
+// 	{
+// 		line = get_next_line(fd);
+// 		line2 = get_next_line(fd2);
+// 		printf("%s", line);
+// 		printf("%s", line2);
+// 		i++;
+// 		free(line);
+// 		free(line2);
+// 	}
+// 	close(fd);
+// 	close(fd2);
+// 	return (0);
+// }
